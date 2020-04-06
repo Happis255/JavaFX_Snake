@@ -2,9 +2,9 @@ package SnakeGameFX;
 
 public class Corner {
 
-    static int width = 20;
-    static int height = 20;
-    static int corner_size = 25;
+    private static int width = 20;
+    private static int height = 30;
+    private static int corner_size = 25;
 
     private int position_x;
     private int position_y;
@@ -18,24 +18,12 @@ public class Corner {
         return width;
     }
 
-    public static void setWidth(int width) {
-        Corner.width = width;
-    }
-
     public static int getHeight() {
         return height;
     }
 
-    public static void setHeight(int height) {
-        Corner.height = height;
-    }
-
     public static int getCorner_size() {
         return corner_size;
-    }
-
-    public static void setCorner_size(int corner_size) {
-        Corner.corner_size = corner_size;
     }
 
     public int getPosition_x() {

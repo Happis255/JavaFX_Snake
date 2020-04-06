@@ -1,8 +1,10 @@
 package SnakeGameFX;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +12,12 @@ import java.util.List;
 public class Snake {
 
     private static List <Corner> snake = new ArrayList<>();
-    private static int speed = 1;
+    private static int speed = 10;
     private static SnakeDirection direction = SnakeDirection.right;
     private static boolean game_finished = false;
+    private static boolean gameoverscreen_showed = false;
+    private static int score = 0;
+    private static int counter = 0;
 
     enum SnakeDirection {
         right, left, top, down;
@@ -22,24 +27,32 @@ public class Snake {
         return snake;
     }
 
-    public static void setSnake(List<Corner> snake) {
-        Snake.snake = snake;
-    }
-
     public static int getSpeed() {
         return speed;
     }
 
-    public static void setSpeed(int speed) {
-        Snake.speed = speed;
+    public static void setDirection(SnakeDirection direction) {
+        Snake.direction = direction;
     }
 
     public static SnakeDirection getDirection() {
         return direction;
     }
 
-    public static void setDirection(SnakeDirection direction) {
-        Snake.direction = direction;
+    public static int getScore() {
+        return score;
+    }
+
+    public static void upSpeed(){
+        speed++;
+    }
+
+    public static void giveOneScoreUp() {
+        score++;
+    }
+
+    public static boolean isGame_finished() {
+        return game_finished;
     }
 
     public static void initializeSnake(){
@@ -49,9 +62,19 @@ public class Snake {
 
     public static void snakeMovement(GraphicsContext graphicsContext){
         if (game_finished){
-            graphicsContext.setFill(Color.RED);
-            graphicsContext.setFont(new Font("",30));
-            graphicsContext.fillText("Game Over :(", 100, 200);
+            if(!gameoverscreen_showed) {
+                graphicsContext.setFill(Color.rgb(0, 0, 0, 0.5));
+                graphicsContext.fillRect(0, 0,Corner.getCorner_size()*Corner.getWidth(), Corner.getCorner_size()*Corner.getHeight());
+
+                graphicsContext.setFill(Color.rgb(255, 255, 255));
+                graphicsContext.setFont(Font.font("Calibri", FontWeight.SEMI_BOLD, 90));
+                graphicsContext.fillText("GAME OVER", 20, Corner.getCorner_size()*Corner.getHeight()/2-40);
+
+                graphicsContext.setFont(Font.font("Calibri", FontWeight.NORMAL, 50));
+                graphicsContext.fillText("Score: " + score, 170, Corner.getCorner_size()*Corner.getHeight()/2+10);
+                gameoverscreen_showed = true;
+            }
+
         } else {
             //Move all snakes parts without the head
             for (int i = snake.size() - 1; i >=1; i--){
@@ -66,31 +89,28 @@ public class Snake {
                     break;
                 case down:
                     snake.get(0).setPosition_y(snake.get(0).getPosition_y()+1);
-                    if (snake.get(0).getPosition_y() > Corner.getHeight()) game_finished = true;
+                    if (snake.get(0).getPosition_y() >= Corner.getHeight()) game_finished = true;
                     break;
                 case right:
                     snake.get(0).setPosition_x(snake.get(0).getPosition_x()+1);
-                    if (snake.get(0).getPosition_x() < 0) game_finished = true;
+                    if (snake.get(0).getPosition_x() >= Corner.getWidth()) game_finished = true;
                     break;
                 case left:
                     snake.get(0).setPosition_x(snake.get(0).getPosition_x()-1);
-                    if (snake.get(0).getPosition_x() > Corner.getWidth()) game_finished = true;
+                    if (snake.get(0).getPosition_x() < 0) game_finished = true;
                     break;
-            }
-
-            for (Corner corner : snake){
-                graphicsContext.setFill(Color.web("679b9b"));
-                graphicsContext.fillRect(corner.getPosition_x()*Corner.getCorner_size(), corner.getPosition_y()*Corner.getCorner_size(),
-                        Corner.getCorner_size()-1, Corner.getCorner_size()-1);
-                graphicsContext.setFill(Color.web("ffffdd"));
-                graphicsContext.fillRect(corner.getPosition_x()*Corner.getCorner_size(), corner.getPosition_y()*Corner.getCorner_size(),
-                        Corner.getCorner_size()-2, Corner.getCorner_size()-2);
             }
 
             //Check, if snake eats
             if (snake.get(0).getPosition_x() == Food.getFood_x() && snake.get(0).getPosition_y() == Food.getFood_y()){
                 snake.add(new Corner(-1, -1));
-                Food.getNewFood(graphicsContext);
+                giveOneScoreUp();
+                Food.getNewFood();
+                counter++;
+                if (counter == 5){
+                    Snake.upSpeed();
+                    counter = 0;
+                }
             }
 
             //Check if have bitten himself
@@ -101,11 +121,6 @@ public class Snake {
                     break;
                 }
             }
-
-            //Setting up background color and score
-            graphicsContext.setFill(Color.WHITE);
-            graphicsContext.setFont(new Font("", 30));
-            graphicsContext.fillText("Score: "+(speed-5), 10, 30);
         }
     }
 }
